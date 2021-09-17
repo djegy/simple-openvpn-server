@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # defaults 
-ADMINPASSWORD="secret"
+read -p "donner un mot de passe" ADMINPASSWORD
 # changement de DNS cloudfare
 DNS1="1.1.1.1"
 # changement de DNS QUAD9
