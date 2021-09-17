@@ -1,3 +1,9 @@
+Ce projet est un fork de theonemule/simple-openvpn-server 
+ les principaux changements:
+ utlisisation du dernier rsa
+ passage du port sur tcp 443
+ Changement du lightweb sur port 4443
+
 Simple OpenVPN Server
 ====
 
