@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # defaults 
-read -p "donner un mot de passe" ADMINPASSWORD
+read -p "donner un mot de passe:" ADMINPASSWORD
 # changement de DNS cloudfare
 DNS1="1.1.1.1"
 # changement de DNS QUAD9
@@ -266,19 +266,19 @@ chmod g+s /etc/openvpn/easy-rsa/
 #Generate a self-signed certificate for the web server
 mv /etc/lighttpd/ssl/ /etc/lighttpd/ssl.$$/
 mkdir /etc/lighttpd/ssl/
-openssl req -new -x509 -keyout /etc/lighttpd/ssl/server.pem -out /etc/lighttpd/ssl/server.pem -days 9999 -nodes -subj "/C=US/ST=California/L=San Francisco/O=example.com/OU=Ops Department/CN=example.com"
+openssl req -new -x509 -keyout /etc/lighttpd/ssl/server.pem -out /etc/lighttpd/ssl/server.pem -days 9999 -nodes -subj "/C=FR/ST=PARIS/L=PARIS/O=openvpn.net/OU=IT/CN=openvpn.net"
 chmod 744 /etc/lighttpd/ssl/server.pem
 
 
 #Configure the web server with the lighttpd.conf from GitHub
 mv /etc/lighttpd/lighttpd.conf /etc/lighttpd/lighttpd.conf.$$
-wget -O /etc/lighttpd/lighttpd.conf https://raw.githubusercontent.com/theonemule/simple-openvpn-server/master/lighttpd.conf
+wget -O /etc/lighttpd/lighttpd.conf https://github.com/djegy/simple-openvpn-server/blob/fork_Djegy/lighttpd.conf
 
 #install the webserver scripts
 rm /var/www/html/*
-wget -O /var/www/html/index.sh https://raw.githubusercontent.com/theonemule/simple-openvpn-server/master/index.sh
+wget -O /var/www/html/index.sh https://github.com/djegy/simple-openvpn-server/blob/fork_Djegy/index.sh
 
-wget -O /var/www/html/download.sh https://raw.githubusercontent.com/theonemule/simple-openvpn-server/master/download.sh
+wget -O /var/www/html/download.sh https://github.com/djegy/simple-openvpn-server/blob/fork_Djegy/download.sh
 chown -R www-data:www-data /var/www/html/
 
 #set the password file for the WWW logon
