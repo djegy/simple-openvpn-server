@@ -2,10 +2,14 @@
 
 # defaults 
 ADMINPASSWORD="secret"
-DNS1="8.8.8.8"
-DNS2="8.8.4.4"
-PROTOCOL=udp
-PORT=1194
+# changement de DNS cloudfare
+DNS1="1.1.1.1"
+# changement de DNS QUAD9
+DNS2="9.9.9.9"
+# changement pour tcp
+PROTOCOL=tcp
+# changement port 443
+PORT=443
 HOST=$(wget -4qO- "http://whatismyip.akamai.com/")
 
 
@@ -95,12 +99,12 @@ if [[ -d /etc/openvpn/easy-rsa/ ]]; then
 fi
 # Get easy-rsa
 
-wget -O ~/EasyRSA-3.0.1.tgz "https://github.com/OpenVPN/easy-rsa/releases/download/3.0.1/EasyRSA-3.0.1.tgz"
-tar xzf ~/EasyRSA-3.0.1.tgz -C ~/
-mv ~/EasyRSA-3.0.1/ /etc/openvpn/
-mv /etc/openvpn/EasyRSA-3.0.1/ /etc/openvpn/easy-rsa/
+wget -O ~/EasyRSA-3.0.8.tgz "https://github.com/OpenVPN/easy-rsa/releases/download/3.0.8/EasyRSA-3.0.8.tgz"
+tar xzf ~/EasyRSA-3.0.8.tgz -C ~/
+mv ~/EasyRSA-3.0.8/ /etc/openvpn/
+mv /etc/openvpn/EasyRSA-3.0.8/ /etc/openvpn/easy-rsa/
 chown -R root:root /etc/openvpn/easy-rsa/
-rm -rf ~/EasyRSA-3.0.1.tgz
+rm -rf ~/EasyRSA-3.0.8.tgz
 cd /etc/openvpn/easy-rsa/
 
 # Create the PKI, set up the CA, the DH params and the server + client certificates
@@ -133,7 +137,7 @@ key server.key
 dh dh.pem
 tls-auth ta.key 0
 topology subnet
-server 10.8.0.0 255.255.255.0
+server 10.13.0.0 255.255.255.0
 ifconfig-pool-persist ipp.txt" > /etc/openvpn/server.conf
 echo 'push "redirect-gateway def1 bypass-dhcp"' >> /etc/openvpn/server.conf
 
@@ -165,12 +169,12 @@ if pgrep firewalld; then
 	# We don't use --add-service=openvpn because that would only work with
 	# the default port and protocol.
 	firewall-cmd --zone=public --add-port=$PORT/$PROTOCOL
-	firewall-cmd --zone=trusted --add-source=10.8.0.0/24
+	firewall-cmd --zone=trusted --add-source=10.13.0.0/24
 	firewall-cmd --permanent --zone=public --add-port=$PORT/$PROTOCOL
-	firewall-cmd --permanent --zone=trusted --add-source=10.8.0.0/24
+	firewall-cmd --permanent --zone=trusted --add-source=10.13.0.0/24
 	# Set NAT for the VPN subnet
-	firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 -j SNAT --to $IP
-	firewall-cmd --permanent --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 -j SNAT --to $IP
+	firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.13.0.0/24 -j SNAT --to $IP
+	firewall-cmd --permanent --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.13.0.0/24 -j SNAT --to $IP
 else
 	# Needed to use rc.local with some systemd distros
 	if [[ "$OS" = 'debian' && ! -e $RCLOCAL ]]; then
@@ -179,17 +183,17 @@ exit 0' > $RCLOCAL
 	fi
 	chmod +x $RCLOCAL
 	# Set NAT for the VPN subnet
-	iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -j SNAT --to $IP
-	sed -i "1 a\iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -j SNAT --to $IP" $RCLOCAL
+	iptables -t nat -A POSTROUTING -s 10.13.0.0/24 -j SNAT --to $IP
+	sed -i "1 a\iptables -t nat -A POSTROUTING -s 10.13.0.0/24 -j SNAT --to $IP" $RCLOCAL
 	if iptables -L -n | grep -qE '^(REJECT|DROP)'; then
 		# If iptables has at least one REJECT rule, we asume this is needed.
 		# Not the best approach but I can't think of other and this shouldn't
 		# cause problems.
 		iptables -I INPUT -p $PROTOCOL --dport $PORT -j ACCEPT
-		iptables -I FORWARD -s 10.8.0.0/24 -j ACCEPT
+		iptables -I FORWARD -s 10.13.0.0/24 -j ACCEPT
 		iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
 		sed -i "1 a\iptables -I INPUT -p $PROTOCOL --dport $PORT -j ACCEPT" $RCLOCAL
-		sed -i "1 a\iptables -I FORWARD -s 10.8.0.0/24 -j ACCEPT" $RCLOCAL
+		sed -i "1 a\iptables -I FORWARD -s 10.13.0.0/24 -j ACCEPT" $RCLOCAL
 		sed -i "1 a\iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT" $RCLOCAL
 	fi
 fi
